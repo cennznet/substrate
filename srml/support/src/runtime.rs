@@ -219,9 +219,7 @@ macro_rules! construct_runtime {
 		$crate::__decl_outer_error!(
 			$runtime;
 			$(
-				$name: $module:: $( < $module_instance >:: )? {
-					$( $modules $( <$modules_generic> )* ),*
-				}
+				$name: $module:: $( < $module_instance > )?
 			),*
 		);
 		$crate::__decl_all_modules!(
@@ -411,7 +409,6 @@ macro_rules! __create_decl_macro {
 
 __create_decl_macro!(__decl_outer_event, impl_outer_event, Event, $);
 __create_decl_macro!(__decl_outer_origin, impl_outer_origin, Origin, $);
-__create_decl_macro!(__decl_outer_error, impl_outer_error, Error, $);
 
 /// A macro that defines all modules as an associated types of the Runtime type.
 #[macro_export]
@@ -896,5 +893,64 @@ macro_rules! __impl_outer_validate_unsigned {
 				$( $parsed_modules )*
 			}
 		);
+	};
+}
+
+
+/// A private macro that generates Error type for the runtime.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __decl_outer_error {
+	(
+		$runtime:ident;
+		$(
+			$name:ident: $module:ident:: $( < $module_instance:ident > )?
+		),*
+	) => {
+		$crate::__decl_outer_error! {
+			$runtime;
+			;
+			{}
+			$( $name: $module:: $( < $module_instance > )?, )*
+		}
+	};
+	(
+		$runtime:ident;
+		;
+		{ $( $parsed:tt )* }
+		System: $system:ident ::,
+		$( $rest:tt )*
+	) => {
+		$crate::__decl_outer_error! {
+			$runtime;
+			$system;
+			{ $( $parsed )* }
+			$( $rest )*
+		}
+	};
+	(
+		$runtime:ident;
+		$( $system:ident )?;
+		{ $( $parsed:tt )* }
+		$name:ident: $module:ident:: $( < $module_instance:ident > )?,
+		$( $rest:tt )*
+	) => {
+		$crate::__decl_outer_error! {
+			$runtime;
+			$( $system )?;
+			{ $( $parsed )* $name: $module:: $( < $module_instance > )?, }
+			$( $rest )*
+		}
+	};
+	(
+		$runtime:ident;
+		$( $system:ident )?;
+		{ $( $name:ident: $module:ident:: $( < $module_instance:ident > )?, )* }
+	) => {
+		$crate::impl_outer_error! {
+			pub enum Error for $runtime $( where system = $system )? {
+				$( $module $( < $module_instance > )? ),*
+			}
+		}
 	};
 }

@@ -164,7 +164,7 @@ impl Decode for Vote {
 }
 
 type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
-type Error = &'static str;
+pub type Error = &'static str;
 
 pub const DEFAULT_ENACTMENT_PERIOD: u32 = 0;
 pub const DEFAULT_LAUNCH_PERIOD: u32 = 0;
@@ -330,6 +330,7 @@ decl_event!(
 
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
+		type Error = Error;
 		/// The minimum period of locking and the period between a proposal being approved and enacted.
 		///
 		/// It should generally be a little more than the unstake period to ensure that

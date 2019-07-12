@@ -3,20 +3,20 @@ macro_rules! impl_outer_error {
 	(
 		$(#[$attr:meta])*
 		pub enum $name:ident for $runtime:ident {
-			$( $module:ident $( <$generic:ident $(, $instance:path )? > )? ),* $(,)?
+			$( $module:ident $( < $module_instance:ident > )? ),* $(,)?
 		}
 	) => {
 		$crate::impl_outer_error! {
 			$(#[$attr])*
 			pub enum $name for $runtime where system = system {
-				$( $module $( <$generic $(, $instance )? > )?, )*
+				$( $module $( < $module_instance > )?, )*
 			}
 		}
 	};
 	(
 		$(#[$attr:meta])*
 		pub enum $name:ident for $runtime:ident where system = $system:ident {
-			$( $module:ident $( <$generic:ident $(, $instance:path )?> )? ),* $(,)?
+			$( $module:ident $( < $module_instance:ident > )? ),* $(,)?
 		}
 	) => {
 		$crate::impl_outer_error!(
@@ -24,27 +24,7 @@ macro_rules! impl_outer_error {
 			$name;
 			$runtime;
 			$system;
-			Modules { $( $module $( <$generic $(, $instance )? > )*, )* };
-		);
-	};
-	(
-		$(#[$attr:meta])*;
-		$name:ident;
-		$runtime:ident;
-		$system:ident;
-		Modules {
-			$module:ident $( <T $(,  $instance:path )? > )?,
-			$( $rest_module:tt )*
-		};
-		$( $parsed:tt )*
-	) => {
-		$crate::impl_outer_error!(
-			$( #[$attr] )*;
-			$name;
-			$runtime;
-			$system;
-			Modules { $( $rest_module )* };
-			$( $parsed )* $module $( <$runtime $(, $instance )? > )?,
+			$( $module $( < $module_instance > )?, )*
 		);
 	};
 
@@ -55,9 +35,9 @@ macro_rules! impl_outer_error {
 		$name:ident;
 		$runtime:ident;
 		$system:ident;
-		Modules { };
-		$( $module:ident $( <$generic_param:ident $(, $generic_instance:path )? > )* ,)*
+		$( $module:ident $( < $module_instance:ident > )? ,)*
 	) => {
+		$crate::paste::item! {
 		// Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 		#[derive(Clone, PartialEq, Eq, $crate::codec::Encode)]
 		#[cfg_attr(feature = "std", derive(Debug))]
@@ -66,8 +46,9 @@ macro_rules! impl_outer_error {
 		pub enum $name {
 			system($system::Error),
 			$(
-				$module($module::Error),
+				[< $module $(_ $module_instance )? >]  ($module::Error),
 			)*
+		}
 		}
 
 		impl From<$system::Error> for $name {

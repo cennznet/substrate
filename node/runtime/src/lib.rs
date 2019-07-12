@@ -412,7 +412,7 @@ construct_runtime!(
 		Timestamp: timestamp::{Module, Call, Storage, Config<T>, Inherent},
 		Authorship: authorship::{Module, Call, Storage},
 		Indices: indices,
-		Balances: balances::{default, Error},
+		Balances: balances,
 		Staking: staking::{default, OfflineWorker},
 		Session: session::{Module, Call, Storage, Event, Config<T>},
 		Democracy: democracy::{Module, Call, Storage, Config, Event<T>},

@@ -296,7 +296,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		$vis:vis fn deposit_event $(<$dpeg:ident $(, $dpeg_instance:ident)?>)* () = default;
@@ -312,7 +312,7 @@ macro_rules! decl_module {
 			{ $( $on_finalize )* }
 			{ $( $offchain )* }
 			{ $( $constants )* }
-			{ $( $error_type )* }
+			{ $( $error_type )? }
 			[ $( $dispatchables )* ]
 			$($rest)*
 		);
@@ -327,7 +327,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		$vis:vis fn deposit_event $(<$dpeg:ident $(, $dpeg_instance:ident)?>)* (
@@ -345,7 +345,7 @@ macro_rules! decl_module {
 			{ $( $on_finalize )* }
 			{ $( $offchain )* }
 			{ $( $constants )* }
-			{ $( $error_type )* }
+			{ $( $error_type )? }
 			[ $( $dispatchables )* ]
 			$($rest)*
 		);
@@ -360,7 +360,7 @@ macro_rules! decl_module {
 		{}
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		fn on_finalize($($param_name:ident : $param:ty),* ) { $( $impl:tt )* }
@@ -376,7 +376,7 @@ macro_rules! decl_module {
 			{ fn on_finalize( $( $param_name : $param ),* ) { $( $impl )* } }
 			{ $( $offchain )* }
 			{ $( $constants )* }
-			{ $( $error_type )* }
+			{ $( $error_type )? }
 			[ $( $dispatchables )* ]
 			$($rest)*
 		);
@@ -391,7 +391,7 @@ macro_rules! decl_module {
 		{}
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		fn on_finalise($($param_name:ident : $param:ty),* ) { $( $impl:tt )* }
@@ -411,7 +411,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		fn on_initialize($($param_name:ident : $param:ty),* ) { $( $impl:tt )* }
@@ -427,7 +427,7 @@ macro_rules! decl_module {
 			{ $( $on_finalize )* }
 			{ $( $offchain )* }
 			{ $( $constants )* }
-			{ $( $error_type )* }
+			{ $( $error_type )? }
 			[ $( $dispatchables )* ]
 			$($rest)*
 		);
@@ -442,7 +442,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		fn on_initialise($($param_name:ident : $param:ty),* ) { $( $impl:tt )* }
@@ -465,7 +465,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		fn offchain_worker($($param_name:ident : $param:ty),* ) { $( $impl:tt )* }
@@ -483,7 +483,7 @@ macro_rules! decl_module {
 			{ $( $on_finalize )* }
 			{ fn offchain_worker( $( $param_name : $param ),* ) { $( $impl )* } }
 			{ $( $constants )* }
-			{ $( $error_type )* }
+			{ $( $error_type )? }
 			[ $( $dispatchables )* ]
 			$($rest)*
 		);
@@ -503,7 +503,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$( #[doc = $doc_attr:tt] )*
 		const $name:ident: $ty:ty = $value:expr;
@@ -526,7 +526,7 @@ macro_rules! decl_module {
 				$( #[doc = $doc_attr ] )*
 				$name: $ty = $value;
 			}
-			{ $( $error_type )* }
+			{ $( $error_type )? }
 			[ $( $dispatchables )* ]
 			$($rest)*
 		);
@@ -569,41 +569,6 @@ macro_rules! decl_module {
 			$($rest)*
 		);
 	};
-	// Add default Error if none supplied
-	(@normalize
-		$(#[$attr:meta])*
-		pub struct $mod_type:ident<
-			$trait_instance:ident:
-				$trait_name:ident$(<I>, $instance:ident: $instantiable:path $(= $module_default_instance:path)?)?
-			>
-		for enum $call_type:ident where origin: $origin_type:ty, system = $system:ident
-		{ $( $other_where_bounds:tt )* }
-		{ $( $deposit_event:tt )* }
-		{ $( $on_initialize:tt )* }
-		{ $( $on_finalize:tt )* }
-		{ $( $offchain:tt )* }
-		{ $( $constants:tt )* }
-		{ }
-		[ $($t:tt)* ]
-		$($rest:tt)*
-	) => {
-		$crate::decl_module!(@normalize
-			$(#[$attr])*
-			pub struct $mod_type<
-				$trait_instance: $trait_name$(<I>, $instance: $instantiable $(= $module_default_instance)?)?
-			>
-			for enum $call_type where origin: $origin_type, system = $system
-			{ $( $other_where_bounds )* }
-			{ $( $deposit_event )* }
-			{ $( $on_initialize )* }
-			{ $( $on_finalize )* }
-			{ $( $offchain )* }
-			{ $( $constants )* }
-			{ &'static str }
-			[ $($t)* ]
-			$($rest)*
-		);
-	};
 
 	// This puts the function statement into the [], decreasing `$rest` and moving toward finishing the parse.
 	(@normalize
@@ -619,7 +584,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $error_type:ty }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		#[weight = $weight:expr]
@@ -640,7 +605,7 @@ macro_rules! decl_module {
 			{ $( $on_finalize )* }
 			{ $( $offchain )* }
 			{ $( $constants )* }
-			{ $error_type }
+			{ $( $error_type )? }
 			[
 				$( $dispatchables )*
 				$(#[doc = $doc_attr])*
@@ -667,7 +632,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		$fn_vis:vis fn $fn_name:ident(
@@ -687,7 +652,7 @@ macro_rules! decl_module {
 			{ $( $on_finalize )* }
 			{ $( $offchain )* }
 			{ $( $constants )* }
-			{ $( $error_type )* }
+			{ $( $error_type )? }
 			[ $( $dispatchables )* ]
 			$(#[doc = $doc_attr])*
 			#[weight = $crate::dispatch::TransactionWeight::default()]
@@ -708,7 +673,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		$(#[weight = $weight:expr])?
@@ -733,7 +698,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		$(#[weight = $weight:expr])?
@@ -758,7 +723,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 		$(#[doc = $doc_attr:tt])*
 		$(#[weight = $weight:expr])?
@@ -773,6 +738,41 @@ macro_rules! decl_module {
 			For root-matching dispatch, also add `ensure_root(origin)?`."
 		);
 	};
+	// Add default Error if none supplied and triggers `@imp` expansion which is the real expansion.
+	(@normalize
+		$(#[$attr:meta])*
+		pub struct $mod_type:ident<$trait_instance:ident: $trait_name:ident$(<I>, I: $instantiable:path $(= $module_default_instance:path)?)?>
+		for enum $call_type:ident where origin: $origin_type:ty, system = $system:ident
+		{ $( $other_where_bounds:tt )* }
+		{ $( $deposit_event:tt )* }
+		{ $( $on_initialize:tt )* }
+		{ $( $on_finalize:tt )* }
+		{ $( $offchain:tt )* }
+		{ $( $constants:tt )* }
+		{ }
+		[ $( $dispatchables:tt )* ]
+	) => {
+		$crate::decl_module!(@imp
+			$(#[$attr])*
+			pub struct $mod_type<$trait_instance: $trait_name$(<I>, I: $instantiable $(= $module_default_instance)?)?>
+			for enum $call_type where origin: $origin_type, system = $system {
+				$( $dispatchables )*
+			}
+			{ $( $other_where_bounds )* }
+			{ $( $deposit_event )* }
+			{ $( $on_initialize )* }
+			{ $( $on_finalize )* }
+			{ $( $offchain )* }
+			{ $( $constants )* }
+			{ Error }
+			{
+				$crate::decl_error! {
+					pub enum Error {}
+				}
+			}
+		);
+	};
+
 	// Last normalize step. Triggers `@imp` expansion which is the real expansion.
 	(@normalize
 		$(#[$attr:meta])*
@@ -784,7 +784,7 @@ macro_rules! decl_module {
 		{ $( $on_finalize:tt )* }
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
-		{ $( $error_type:tt )* }
+		{ $( $error_type:ty )? }
 		[ $( $dispatchables:tt )* ]
 	) => {
 		$crate::decl_module!(@imp
@@ -800,6 +800,7 @@ macro_rules! decl_module {
 			{ $( $offchain )* }
 			{ $( $constants )* }
 			{ $( $error_type )* }
+			{ }
 		);
 	};
 
@@ -1143,8 +1144,11 @@ macro_rules! decl_module {
 		{ $( $offchain:tt )* }
 		{ $( $constants:tt )* }
 		{ $error_type:ty }
+		{ $( $error_impl:tt )* }
 	) => {
 		$crate::__check_reserved_fn_name! { $( $fn_name )* }
+
+		$( $error_impl )*
 
 		// Workaround for https://github.com/rust-lang/rust/issues/26925 . Remove when sorted.
 		#[derive(Clone, Copy, PartialEq, Eq)]
