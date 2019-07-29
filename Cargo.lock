@@ -2354,6 +2354,7 @@ dependencies = [
  "srml-elections 2.0.0",
  "srml-executive 2.0.0",
  "srml-finality-tracker 2.0.0",
+ "srml-generic-asset 2.0.0",
  "srml-grandpa 2.0.0",
  "srml-im-online 0.1.0",
  "srml-indices 2.0.0",

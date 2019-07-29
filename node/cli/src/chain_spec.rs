@@ -23,7 +23,7 @@ use node_runtime::{
 	BabeConfig,	BalancesConfig, ContractsConfig, CouncilConfig, DemocracyConfig,
 	ElectionsConfig, GrandpaConfig, ImOnlineConfig, IndicesConfig, Perbill,
 	SessionConfig,	SessionKeys, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-	TechnicalCommitteeConfig, WASM_BINARY,
+	TechnicalCommitteeConfig, GenericAssetConfig, WASM_BINARY,
 };
 use node_runtime::constants::{time::*, currency::*};
 pub use node_runtime::GenesisConfig;
@@ -168,6 +168,14 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 		grandpa: Some(GrandpaConfig {
 			authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
 		}),
+		generic_asset: Some(GenericAssetConfig {
+			assets: vec![0, 1],
+			initial_balance: 10u128.pow(9),
+			endowed_accounts: endowed_accounts.clone().into_iter().map(Into::into).collect(),
+			next_asset_id: 1000,
+			staking_asset_id: 0,
+			spending_asset_id: 1,
+		}),
 	}
 }
 
@@ -310,6 +318,14 @@ pub fn testnet_genesis(
 		}),
 		grandpa: Some(GrandpaConfig {
 			authorities: initial_authorities.iter().map(|x| (x.3.clone(), 1)).collect(),
+		}),
+		generic_asset: Some(GenericAssetConfig {
+			assets: vec![0, 1],
+			initial_balance: 10u128.pow(9),
+			endowed_accounts: endowed_accounts.clone().into_iter().map(Into::into).collect(),
+			next_asset_id: 1000,
+			staking_asset_id: 0,
+			spending_asset_id: 1,
 		}),
 	}
 }

@@ -376,6 +376,12 @@ impl im_online::Trait for Runtime {
 	type IsValidAuthorityId = Babe;
 }
 
+impl generic_asset::Trait for Runtime {
+	type Balance = Balance;
+	type AssetId = u32;
+	type Event = Event;
+}
+
 impl grandpa::Trait for Runtime {
 	type Event = Event;
 }
@@ -415,6 +421,7 @@ construct_runtime!(
 		Contracts: contracts,
 		Sudo: sudo,
 		ImOnline: im_online::{default, ValidateUnsigned},
+		GenericAsset: generic_asset,
 	}
 );
 
