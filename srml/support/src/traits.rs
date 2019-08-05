@@ -21,8 +21,9 @@
 use crate::rstd::{prelude::*, result, marker::PhantomData, ops::Div};
 use crate::codec::{Codec, Encode, Decode};
 use primitives::u32_trait::Value as U32;
-use crate::sr_primitives::traits::{MaybeSerializeDebug, SimpleArithmetic, Saturating};
+use crate::sr_primitives::traits::{MaybeSerializeDebug, SimpleArithmetic, Saturating, Zero};
 use crate::sr_primitives::ConsensusEngineId;
+use crate::sr_primitives::weights::DispatchInfo;
 
 use super::for_each_tuple;
 
@@ -313,6 +314,59 @@ impl<
 		Target1::on_unbalanced(imb1);
 		Target2::on_unbalanced(imb2);
 	}
+}
+
+pub trait ComputeFee<AccountId, Balance> {
+	fn compute_fee(
+		extrnsic_len: usize,
+		info: DispatchInfo,
+	) -> Balance;
+}
+
+impl<AccountId, Balance: Zero> ComputeFee<AccountId, Balance> for () {
+	fn compute_fee(
+		_: usize,
+		_: DispatchInfo,
+	) -> Balance {
+		Zero::zero()
+	}
+}
+
+/// The minimum abstraction over a fungible assets system.
+pub trait BasicCurrency<AccountId> {
+	/// The balance of an account.
+	type Balance: SimpleArithmetic + Codec + Copy + MaybeSerializeDebug + Default;
+
+	/// The opaque token type for an imbalance. This is returned by unbalanced operations
+	/// and must be dealt with. It may be dropped but cannot be cloned.
+	type PositiveImbalance: Imbalance<Self::Balance, Opposite=Self::NegativeImbalance>;
+
+	/// The opaque token type for an imbalance. This is returned by unbalanced operations
+	/// and must be dealt with. It may be dropped but cannot be cloned.
+	type NegativeImbalance: Imbalance<Self::Balance, Opposite=Self::PositiveImbalance>;
+
+	type AdditionalInfo;
+
+	/// Adds up to `value` to the free balance of `who`.
+	fn deposit(
+		who: &AccountId,
+		value: Self::Balance,
+		info: &Self::AdditionalInfo,
+	) -> result::Result<Self::PositiveImbalance, &'static str>;
+
+	/// Removes some free balance from `who` account for `reason` if possible. If `liveness` is
+	/// `KeepAlive`, then no less than `ExistentialDeposit` must be left remaining.
+	///
+	/// This checks any locks, vesting, and liquidity requirements. If the removal is not possible,
+	/// then it returns `Err`.
+	///
+	/// If the operation is successful, this will return `Ok` with a `NegativeImbalance` whose value
+	/// is `value`.
+	fn withdraw(
+		who: &AccountId,
+		value: Self::Balance,
+		info: &Self::AdditionalInfo,
+	) -> result::Result<Self::NegativeImbalance, &'static str>;
 }
 
 /// Abstraction over a fungible assets system.
