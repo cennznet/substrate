@@ -158,15 +158,21 @@ impl balances::Trait for Runtime {
 	type OnFreeBalanceZero = ((Staking, Contracts), Session);
 	type OnNewAccount = Indices;
 	type Event = Event;
-	type TransactionPayment = DealWithFees;
 	type DustRemoval = ();
 	type TransferPayment = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type TransferFee = TransferFee;
 	type CreationFee = CreationFee;
+}
+
+impl fees::Trait for Runtime {
 	type TransactionBaseFee = TransactionBaseFee;
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
+	type TransactionPayment = DealWithFees;
+	type ComputeFee = fees::DefaultComputeFee<Runtime>;
+	type Currency = balances::TakeFees<Runtime>;
+	type AdditionalInfo = ();
 }
 
 parameter_types! {
@@ -456,7 +462,7 @@ pub type SignedExtra = (
 	system::CheckEra<Runtime>,
 	system::CheckNonce<Runtime>,
 	system::CheckWeight<Runtime>,
-	balances::TakeFees<Runtime>
+	fees::TakeFees<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
